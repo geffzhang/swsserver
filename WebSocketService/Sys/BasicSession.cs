@@ -5,6 +5,12 @@ namespace WebSocketService.Sys
     public class BasicSession : ISession
     {
         private IBroadcaster broadcaster;
+
+        public IBroadcaster Broadcaster
+        {
+            get { return broadcaster; }
+        }
+
         private ISerializer serializer;
 
         public string UserId { get; set; }

@@ -26,6 +26,7 @@ namespace SuperWebSocket.Samples.BasicConsole
         }
     }
 
+
     public enum UserType
     {
         User,
@@ -41,8 +42,10 @@ namespace SuperWebSocket.Samples.BasicConsole
 
     public class MySession : BasicSession
     {
+        public string AssociatedServerIdentity { get; set; }
+        public List<string> SubscribedEventClasses = new List<string>();
         public UserType UserType { get; set; }
-
+ 
         public MySession(User user, IChannel channel, IBroadcaster broadcaster, ISerializer serializer)
             : base(user.UserId, channel, broadcaster, serializer)
         {
@@ -60,11 +63,11 @@ namespace SuperWebSocket.Samples.BasicConsole
         public override MySession Create(IChannel channel)
         {
             var user = GetUser(channel);
-            if (user == null) return null;
+            if (user == null) 
+                return null;
 
             var session = new MySession(user, channel, this.Sessions, this.Serializer);
             if (user.Type == UserType.System) return session;
-
             return this.Sessions.Add(session);
         }
 
@@ -174,11 +177,52 @@ namespace SuperWebSocket.Samples.BasicConsole
             session.Broadcast(broadcast.ToUserIds, new OutgoingMessage("Notification.Handle", notification));
         }
 
+        [Syscall]
         public void GetLastN(int maxNotifications, ISession session)
         {
             maxNotifications = Math.Min(100, Math.Max(0, maxNotifications));
             session.Write(new OutgoingMessage("Notification.Handle", history.GetLastN(maxNotifications, session.UserId)));
         }
+    }
+
+    public class PublishSubscribeController : IController
+    {       
+        [Syscall]
+        public void Publish(PublishParameter broadcast, ISession session)
+        {
+            var mySession = session as MySession;
+            var sessionManager = mySession.Broadcaster as SessionManager<MySession>;
+            var userIds = sessionManager.ActiveSessions.Where(x => x.Key != mySession.UserId).Select(x => x.Key);
+            mySession.Broadcast(userIds, new OutgoingMessage("PublishSubscribe.Handle", broadcast.Content));
+            Console.WriteLine(string.Format("Forwarding publish command from {0} to server: [{1}]", mySession.UserId, string.Concat(userIds.ToArray()) ));
+
+        }
+
+        public void Subscribe(string subscribeType, ISession session)
+        {
+            var mySession = session as MySession;
+            if (mySession.SubscribedEventClasses.Contains(subscribeType))
+                return;
+            mySession.SubscribedEventClasses.Add(subscribeType);
+            string msg = "";
+            msg += string.Format("[{0}], now subscribed these events:\r\n", mySession.UserId);
+            foreach (string evtClass in mySession.SubscribedEventClasses)
+                msg += string.Format("              {0}\r\n", evtClass);
+            Console.WriteLine(msg);
+        }
+    }
+
+
+    public class PublishParameter
+    {
+        public string PublishType { get; set; }
+
+        public string Content { get; set; }
+    }
+
+    public class SubscribeParameter
+    {
+        public string SubscribeType { get; set; }
     }
 
     public static class ObjectEx

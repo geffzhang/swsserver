@@ -8,80 +8,43 @@
     using System.Threading;
     using System.Linq;
     using WebSocketService.Client;
+    using AppEvents;
 
     public static class Program
     {
-        private class TestProcessor : IConnectionProcessor
-        {
-            public void Error(Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
-
-            public void Opened()
-            {
-                Console.WriteLine("Opened");
-            }
-
-            public void Closed()
-            {
-                Console.WriteLine("Closed");
-            }
-
-            public void MessageReceived(string message)
-            {
-                Console.WriteLine(message);
-            }
-        }
+       
 
         [STAThread]
         public static void Main(string[] args)
         {
-            using (var sock = new WebSocketClient("ws://localhost:8181/", new TestProcessor(), new SystemCredential("abcdefg")))
+            using (var busBroker = new EventBusClientBroker("localhost", 8181, "abcdefg"))
             {
-                Console.WriteLine("Press 'q' to quit");
-
-                var line = Console.ReadLine();
-
-                while (line != "q")
+                if (busBroker.State)
                 {
-                    sock.Send(line);
-                    line = Console.ReadLine();
+                    Console.WriteLine("Press 'q' to quit");
+                    busBroker.Subscribe<NewUserRegisteredEvent>();
+
+                    while (true)
+                    {
+                        string choice = Console.ReadLine();
+                        if (choice == "1")
+                        {
+                            NewUserRegisteredEvent evt = new NewUserRegisteredEvent();
+                            evt.RegisterDate = DateTime.Now;
+                            evt.UserName = "aaron";
+                            busBroker.Publish<NewUserRegisteredEvent>(evt);
+                        }
+                        else if (choice == "2")
+                        {
+                            UserProfileUpdatedEvent evt = new UserProfileUpdatedEvent();
+                            evt.UserID = 100;
+                            busBroker.Publish<UserProfileUpdatedEvent>(evt);
+                        }
+                    }
                 }
-            }
+           }           
         }
 
-        private static void SimpleMessageTest()
-        {
-            var sweb = new WebSocket4Net.WebSocket("ws://localhost:8181/");
-
-            sweb.Open();
-            sweb.Closed += (o, e) => Console.WriteLine("Closed.");
-            sweb.Opened += (o, e) => Console.WriteLine("Opened.");
-            sweb.MessageReceived += (o, e) =>
-            {
-                Console.WriteLine(">>: " + e.Message);
-            };
-            sweb.Error += (o, e) => Console.WriteLine("ERR: " + e.Exception.Message);
-
-            Console.WriteLine("Enter a command, or 'q' to quit.");
-            var command = Console.ReadLine();
-
-            while (command != "q")
-            {
-                if (command == "clear")
-                {
-                    Console.Clear();
-                }
-                else
-                {
-                    sweb.Send(command);
-                }
-
-                command = Console.ReadLine();
-            }
-
-            sweb.Close();
-        }
+       
     }
 }

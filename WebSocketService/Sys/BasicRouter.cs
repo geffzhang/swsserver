@@ -110,9 +110,11 @@ namespace WebSocketService.Sys
             {
                 var model = data.ToObject(dataType);
 
-                if (preFilters != null) PreFilter(model, session);
+                if (preFilters != null) 
+                    PreFilter(model, session);
                 method.Invoke(instance, new object[] { model, session });
-                if (postFilters != null) PostFilter(model, session);
+                if (postFilters != null) 
+                    PostFilter(model, session);
             }
 
             private void PostFilter(object model, ISession session)

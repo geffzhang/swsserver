@@ -11,6 +11,12 @@ namespace WebSocketService.Sys
         private ConcurrentDictionary<string, ConcurrentDictionary<EndPoint, T>> activeSessions =
                new ConcurrentDictionary<string, ConcurrentDictionary<EndPoint, T>>(StringComparer.OrdinalIgnoreCase);
 
+        public ConcurrentDictionary<string, ConcurrentDictionary<EndPoint, T>> ActiveSessions
+        {
+            get { return activeSessions; }
+            set { activeSessions = value; }
+        }
+
         public virtual T Add(T session)
         {
             var userConnections = activeSessions.GetOrAdd(session.UserId, s => new ConcurrentDictionary<EndPoint, T>());
