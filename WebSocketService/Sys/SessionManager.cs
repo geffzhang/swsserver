@@ -19,7 +19,7 @@ namespace WebSocketService.Sys
 
         public virtual T Add(T session)
         {
-            var userConnections = activeSessions.GetOrAdd(session.ClientId, s => new ConcurrentDictionary<EndPoint, T>());
+            var userConnections = activeSessions.GetOrAdd(session.UserId, s => new ConcurrentDictionary<EndPoint, T>());
             userConnections.TryAdd(session.Channel.RemoteEndPoint, session);
             return session;
         }
@@ -34,14 +34,13 @@ namespace WebSocketService.Sys
 
         public virtual void Remove(T session)
         {
-            WithSessions(session.ClientId, sessions => sessions.TryRemove(session.Channel.RemoteEndPoint, out session));
+            WithSessions(session.UserId, sessions => sessions.TryRemove(session.Channel.RemoteEndPoint, out session));
         }
 
         private void WithSessions(string userId, Action<ConcurrentDictionary<EndPoint, T>> fn)
         {
              ConcurrentDictionary<EndPoint, T> sessions;
-             if (activeSessions.TryGetValue(userId, out sessions))
-                 fn(sessions);
+             if (activeSessions.TryGetValue(userId, out sessions)) fn(sessions);
         }
     }
 }

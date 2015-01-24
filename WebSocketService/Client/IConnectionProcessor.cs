@@ -8,7 +8,6 @@ namespace WebSocketService.Client
 {
     public interface IConnectionProcessor
     {
-        WebSocketClient Client {get;set;}
         void Error(Exception ex);
 
         void Opened();
@@ -16,7 +15,5 @@ namespace WebSocketService.Client
         void Closed();
 
         void MessageReceived(string message);
-
-        void MessageReceived(byte[] message);
     }
 }

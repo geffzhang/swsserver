@@ -1,5 +1,4 @@
 ﻿using SuperWebSocket;
-using System;
 using System.Collections.Specialized;
 using System.Net;
 using WebSocketService.Sys;
@@ -32,11 +31,6 @@ namespace WebSocketService.Server
             this.sock.Send(message);
         }
 
-        public void Write(ArraySegment<byte> message)
-        {
-            this.sock.Send(message);
-        }
-
         public void Close()
         {
             this.sock.Close();
@@ -63,7 +57,5 @@ namespace WebSocketService.Server
                 }
             }
         }
-
-
     }
 }

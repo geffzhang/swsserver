@@ -13,7 +13,7 @@ namespace WebSocketService.Sys
 
         private ISerializer serializer;
 
-        public string ClientId { get; set; }
+        public string UserId { get; set; }
 
         public IChannel Channel { get; set; }
 
@@ -23,7 +23,7 @@ namespace WebSocketService.Sys
             IBroadcaster broadcaster, 
             ISerializer serializer)
         {
-            this.ClientId = userId;
+            this.UserId = userId;
             this.Channel = channel;
             this.broadcaster = broadcaster;
             this.serializer = serializer;

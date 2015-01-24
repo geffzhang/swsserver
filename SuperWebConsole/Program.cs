@@ -8,7 +8,6 @@ using System.Threading;
 using WebSocketService.Server;
 using WebSocketService.Sys;
 using WebSocketService.JSON;
-using WebSocketService.Mqtt;
 
 namespace SuperWebSocket.Samples.BasicConsole
 {
@@ -16,7 +15,7 @@ namespace SuperWebSocket.Samples.BasicConsole
     {
         static void Main(string[] args)
         {
-            var router = new MyRouter(new JSONSerializer(),new StorageProvider());
+            var router = new MyRouter(new JSONSerializer());
             router.AddControllersFromAssemblies(typeof(Program).Assembly);
 
             using (var server = new WebSocketService<MySession>(8181, router, router))
@@ -41,7 +40,7 @@ namespace SuperWebSocket.Samples.BasicConsole
         public string UserId { get; set; }
     }
 
-    public class MySession : BasicMQTTSession
+    public class MySession : BasicSession
     {
         public string AssociatedServerIdentity { get; set; }
         public List<string> SubscribedEventClasses = new List<string>();
@@ -54,10 +53,10 @@ namespace SuperWebSocket.Samples.BasicConsole
         }
     }
 
-    public class MyRouter : BasicMQTTRouter<MySession>
+    public class MyRouter : BasicRouter<MySession>
     {
-        public MyRouter(ISerializer serializer, IMqttStorageProvider storageProvider)
-            : base(serializer, storageProvider)
+        public MyRouter(ISerializer serializer)
+            : base(serializer)
         {
         }
 
@@ -68,8 +67,7 @@ namespace SuperWebSocket.Samples.BasicConsole
                 return null;
 
             var session = new MySession(user, channel, this.Sessions, this.Serializer);
-            //if (user.Type == UserType.System) 
-            //    return session;
+            if (user.Type == UserType.System) return session;
             return this.Sessions.Add(session);
         }
 
@@ -183,7 +181,7 @@ namespace SuperWebSocket.Samples.BasicConsole
         public void GetLastN(int maxNotifications, ISession session)
         {
             maxNotifications = Math.Min(100, Math.Max(0, maxNotifications));
-            session.Write(new OutgoingMessage("Notification.Handle", history.GetLastN(maxNotifications, session.ClientId)));
+            session.Write(new OutgoingMessage("Notification.Handle", history.GetLastN(maxNotifications, session.UserId)));
         }
     }
 
@@ -194,9 +192,9 @@ namespace SuperWebSocket.Samples.BasicConsole
         {
             var mySession = session as MySession;
             var sessionManager = mySession.Broadcaster as SessionManager<MySession>;
-            var userIds = sessionManager.ActiveSessions.Where(x => x.Key != mySession.ClientId).Select(x => x.Key).ToList();
+            var userIds = sessionManager.ActiveSessions.Where(x => x.Key != mySession.UserId).Select(x => x.Key);
             mySession.Broadcast(userIds, new OutgoingMessage("PublishSubscribe.Handle", broadcast.Content));
-            Console.WriteLine(string.Format("Forwarding publish command from {0} to server: [{1}]", mySession.ClientId, string.Concat(userIds.ToArray()) ));
+            Console.WriteLine(string.Format("Forwarding publish command from {0} to server: [{1}]", mySession.UserId, string.Concat(userIds.ToArray()) ));
 
         }
 
@@ -207,7 +205,7 @@ namespace SuperWebSocket.Samples.BasicConsole
                 return;
             mySession.SubscribedEventClasses.Add(subscribeType);
             string msg = "";
-            msg += string.Format("[{0}], now subscribed these events:\r\n", mySession.ClientId);
+            msg += string.Format("[{0}], now subscribed these events:\r\n", mySession.UserId);
             foreach (string evtClass in mySession.SubscribedEventClasses)
                 msg += string.Format("              {0}\r\n", evtClass);
             Console.WriteLine(msg);

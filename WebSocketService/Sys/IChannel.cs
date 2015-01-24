@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net;
 
 namespace WebSocketService.Sys
@@ -24,12 +23,6 @@ namespace WebSocketService.Sys
         /// </summary>
         /// <param name="message">The message to be sent</param>
         void Write(string message);
-
-        /// <summary>
-        /// Sends data over the channel
-        /// </summary>
-        /// <param name="message">The message to be sent</param>
-        void Write(ArraySegment<byte> message);
 
         /// <summary>
         /// Closes this channel.

@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json.Linq;
-using WebSocketService.Mqtt;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -62,29 +61,6 @@ namespace WebSocketService.Sys
                 session.Write(new ErrorMessage(ex.Message));
             }
         }
-
-        public virtual void Route(byte[] messageData, T session)
-        {
-            try
-            {
-                MqttMessage msg = MqttMessage.CreateFrom(messageData);
-
-            }
-            catch (TargetInvocationException ex)
-            {
-                var inner = ex.InnerException as HttpException;
-                session.Write(inner != null ? new ErrorMessage(inner.GetHttpCode(), inner.Message) : new ErrorMessage((ex.InnerException ?? ex).Message));
-            }
-            catch (HttpException ex)
-            {
-                session.Write(new ErrorMessage(ex.Message));
-            }
-            catch (Exception ex)
-            {
-                session.Write(new ErrorMessage(ex.Message));
-            }
-        }
-
 
         public virtual void Error(Exception ex, T session)
         {

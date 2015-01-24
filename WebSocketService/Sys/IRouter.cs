@@ -6,8 +6,6 @@ namespace WebSocketService.Sys
     {
         void Route(string message, T session);
 
-        void Route(byte[] message, T session);
-
         void Error(Exception ex, T session);
     }
 }

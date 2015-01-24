@@ -14,14 +14,37 @@ namespace CSharpClient
     public delegate void EventReceived(string evtClass, object evt);
    
     public class EventBusClientBroker : IDisposable
-    {     
+    {
+       class TestProcessor : IConnectionProcessor
+       {
+
+        public void Error(Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+
+        public void Opened()
+        {
+            Console.WriteLine("Opened");
+        }
+
+        public void Closed()
+        {
+            Console.WriteLine("Closed");
+        }
+
+        public void MessageReceived(string message)
+        {
+            Console.WriteLine(message);
+        }
+       }
 
         private WebSocketClient client;
         public string ServerIdentity { get; set; }
 
-        public EventBusClientBroker(string remoteServer, int remotePort, string serverIdentity,IConnectionProcessor processor)
+        public EventBusClientBroker(string remoteServer, int remotePort, string serverIdentity)
         {
-            client = new WebSocketClient(string.Format("ws://{0}:{1}/",remoteServer,remotePort), processor, new SystemCredential(serverIdentity));
+            client = new WebSocketClient(string.Format("ws://{0}:{1}/",remoteServer,remotePort), new TestProcessor(), new SystemCredential(serverIdentity));
             this.ServerIdentity = serverIdentity;             
         }
 
@@ -32,10 +55,14 @@ namespace CSharpClient
                 return (client.State == WebSocketState.Connecting) || (client.State == WebSocketState.Open);
             }
         }
-
-        public void Publish<T>(T evt, string topic, short messageId)
+        public void Subscribe<T>()
         {
-            client.Send(Helper.GeneratePublishCommand<T>(evt,topic,messageId));
+            client.Send(Helper.GenerateSubscribeCommand<T>());
+        }
+
+        public void Publish<T>(T evt)
+        {
+            client.Send(Helper.GeneratePublishCommand<T>(evt));
         } 
 
         public void Dispose()

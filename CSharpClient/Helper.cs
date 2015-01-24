@@ -7,8 +7,6 @@ using System.IO;
 using WebSocketService.Sys;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using WebSocketService.Mqtt;
-using MsgPack.Serialization;
 
 namespace CSharpClient
 {
@@ -29,39 +27,12 @@ namespace CSharpClient
             return Serialize(data);
         }
 
-        public static byte[] GenerateSubscribeCommand(string topic)
+        public static string GenerateSubscribeCommand<T>()
         {
-            using (MemoryStream stream = new MemoryStream())
-            {
-                MqttSubscribeMessage data = new MqttSubscribeMessage().ToTopic(topic);
-                data.WriteTo(stream);
-                return stream.ToArray();
-            }
+            IncomingMessage data = new IncomingMessage() { Fn = "PublishSubscribe.Subscribe", Data = typeof(T).Name };
+            return Serialize(data);
+
         }
-
-        public static byte[] GeneratePublishCommand<T>(T o, string topic,short messageId)
-        {
-            byte[] publishData = null;
-            using (MemoryStream stream = new MemoryStream())
-            {
-                var serializer = SerializationContext.Default.GetSerializer<T>();
-                serializer.Pack(stream,o) ;
-                stream.Position = 0;
-                publishData = stream.ToArray();
-            }
-
-            using (MemoryStream stream = new MemoryStream())
-            {
-                MqttPublishMessage data = new  MqttPublishMessage()
-                    .ToTopic(topic)
-                    .WithMessageIdentifier(messageId)
-                    .WithQos(MqttQos.BestEffort)
-                    .PublishData(publishData);
-                data.WriteTo(stream);
-                return stream.ToArray();
-            }
-        }
-
 
         public static string Serialize(object o)
         {
