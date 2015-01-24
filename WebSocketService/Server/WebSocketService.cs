@@ -1,4 +1,5 @@
-﻿using SuperSocket.SocketBase.Config;
+﻿using WebSocketService.Mqtt;
+using SuperSocket.SocketBase.Config;
 using SuperWebSocket;
 using System;
 using System.Net;
@@ -16,6 +17,33 @@ namespace WebSocketService.Server
             server = new WebSocketServer();
 
             server.NewMessageReceived += (sock, message) =>
+            {
+                T session = null;
+
+                try
+                {
+                    session = Session(sock);
+                    if (session != null)
+                    {
+                        router.Route(message, session);
+                    }
+                    else
+                    {
+                        sock.Close();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (session != null)
+                    {
+                        router.Error(ex, session);
+                    }
+
+                    sock.Close();
+                }
+            };
+
+            server.NewDataReceived += (sock, message) =>
             {
                 T session = null;
 
@@ -70,6 +98,8 @@ namespace WebSocketService.Server
                 WebSocketException.ThrowServerError("Server setup failed. Turn on SuperWebSockets logging for more details.");
             }
         }
+
+      
 
         public void Dispose()
         {

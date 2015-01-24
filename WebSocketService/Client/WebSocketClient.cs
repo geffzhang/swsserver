@@ -39,6 +39,7 @@ namespace WebSocketService.Client
             this.socket.Open();
 
             this.processor = processor;
+            this.processor.Client = this;
             this.retry = this.BeginRetry;
 
             this.socket.Opened += (o, e) =>
@@ -54,6 +55,8 @@ namespace WebSocketService.Client
             };
 
             this.socket.MessageReceived += (o, e) => this.processor.MessageReceived(e.Message);
+
+            this.socket.DataReceived  += (o, e) => this.processor.MessageReceived(e.Data);
 
             this.socket.Error += (o, e) =>
             {
@@ -75,6 +78,11 @@ namespace WebSocketService.Client
         public void Send(string message)
         {
             Lock(() => socket.Send(message));
+        }
+
+        public void Send(byte[] message)
+        {
+            Lock(() => socket.Send(message, 0, message.Length));
         }
 
         public void Dispose()

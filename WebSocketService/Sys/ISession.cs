@@ -12,10 +12,10 @@ namespace WebSocketService.Sys
     public interface ISession 
     {
         /// <summary>
-        /// Gets the user id. This does not have to be unique across the
+        /// Gets the client id. This does not have to be unique across the
         /// system, but cannont be null.
         /// </summary>
-        string UserId { get; }
+        string ClientId { get; }
 
         /// <summary>
         /// Gets the channel object.
