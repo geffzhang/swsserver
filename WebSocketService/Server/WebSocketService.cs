@@ -1,4 +1,5 @@
-﻿using SuperSocket.SocketBase.Config;
+﻿using WebSocketService.Mqtt;
+using SuperSocket.SocketBase.Config;
 using SuperWebSocket;
 using System;
 using System.Net;
@@ -41,6 +42,7 @@ namespace WebSocketService.Server
                     sock.Close();
                 }
             };
+            
 
             server.SessionClosed += (sock, message) =>
             {
@@ -70,6 +72,8 @@ namespace WebSocketService.Server
                 WebSocketException.ThrowServerError("Server setup failed. Turn on SuperWebSockets logging for more details.");
             }
         }
+
+      
 
         public void Dispose()
         {
