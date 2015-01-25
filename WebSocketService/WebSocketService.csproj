@@ -135,6 +135,8 @@
     <Compile Include="MQTT\MqttQos.cs" />
     <Compile Include="MQTT\MqttVariableHeader.cs" />
     <Compile Include="MQTT\Util.cs" />
+    <Compile Include="Server\ClientRequest.cs" />
+    <Compile Include="Server\PubSubWebSocketServer.cs" />
     <Compile Include="Server\WebSocketChannel.cs" />
     <Compile Include="Server\MqttWebSocketService.cs" />
     <Compile Include="Server\WebSocketService.cs" />
